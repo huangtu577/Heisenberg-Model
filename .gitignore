@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+build/
+Makefile
+*.cmake
+CMakeCache.txt
+CMakeFiles/
+Heisenberg
+test/
+.cache/
