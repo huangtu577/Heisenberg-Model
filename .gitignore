@@ -39,3 +39,5 @@ CMakeFiles/
 Heisenberg
 test/
 .cache/
+Gifs/
+*.ipynb
