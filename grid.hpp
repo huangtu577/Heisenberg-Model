@@ -210,7 +210,7 @@ public:
       this->hb_sweep();
       
 
-      if (i % 10000 == 0) {
+      if (i % 50000 == 0) {
         boost::multi_array<double, 4> snapshot = this->snapshot();
 #pragma omp critical
         {

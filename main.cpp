@@ -36,7 +36,7 @@ void mainloop(double J, double beta, const int N, size_t L,
     mag.push_back(grid.calculate_magnetization());
     energy.push_back(grid.calculate_energy());
 
-    if (i % 2000 == 0) {
+    if (i % 10000 == 0) {
       boost::multi_array<double, 4> snapshot = grid.snapshot();
 #pragma omp critical
       {
