@@ -8,7 +8,7 @@
 #include <highfive/H5File.hpp>
 #include <iomanip>
 #include <iostream>
-#include <omp.h>
+// #include <omp.h>
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
