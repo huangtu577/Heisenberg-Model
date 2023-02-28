@@ -78,7 +78,7 @@ int main() {
   double beta = 0.5;
   const int N = 5e6;
   size_t L = 11;
-  const std::string FILENAME = "heisenberg_model_test_new.h5";
+  const std::string FILENAME = "heisenberg_model.h5";
   std::cout << std::setprecision(10);
   const size_t multihitparam = 7;
   size_t steps = 16;
