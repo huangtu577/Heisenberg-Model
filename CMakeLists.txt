@@ -23,10 +23,10 @@ add_executable(${This} main.cpp)
 target_link_libraries(${This} HighFive)
 
 
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(${This}  OpenMP::OpenMP_CXX)
-endif()
+# find_package(OpenMP REQUIRED)
+# if(OpenMP_CXX_FOUND)
+#   target_link_libraries(${This} OpenMP::OpenMP_CXX)
+# endif()
 
 
 
