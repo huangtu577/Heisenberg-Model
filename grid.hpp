@@ -99,7 +99,7 @@ public:
 
     // grid = grid_tmp;
     this->Z = this->calculate_partition_function();
-    std::cout << "Grid constructor" << std::endl;
+    std::cout << "Grid constructor: L: " << this->x << ", Beta: "<< beta << std::endl;
   }
 
   ~Grid3D() {
@@ -210,7 +210,7 @@ public:
       this->hb_sweep();
       
 
-      if (i % 50000 == 0) {
+      if (i % 100000 == 0) {
         boost::multi_array<double, 4> snapshot = this->snapshot();
 #pragma omp critical
         {
