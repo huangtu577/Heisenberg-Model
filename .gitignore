@@ -40,4 +40,4 @@ Heisenberg
 test/
 .cache/
 Gifs/
-*.ipynb
+*.ipynb*
