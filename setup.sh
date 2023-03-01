@@ -1,9 +1,13 @@
 
+sudo apt update && sudo apt upgrade -y
+
 # Installing the main dependencies 
-sudo apt install cmake 
-sudo apt install ninja-build 
-sudo apt install build-essential 
-sudo apt-get install libboost-all-dev 
-sudo apt-get install libomp-dev 
-sudo apt-get install libhdf5-serial-dev
+sudo apt install cmake -y
+sudo apt install ninja-build -y 
+sudo apt install build-essential -y 
+sudo apt-get install libboost-all-dev -y 
+sudo apt-get install libomp-dev -y
+sudo apt-get install libhdf5-serial-dev -y
+
+sudo apt install clang -y
 
