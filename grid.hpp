@@ -43,6 +43,8 @@ public:
   std::uniform_real_distribution<double> dis_phi{0.0, 2 * std::numbers::pi};
   std::uniform_real_distribution<> dis_theta{0.0, std::numbers::pi};
   std::uniform_real_distribution<double> dis_probability{0.0, 1.0};
+
+  // virtual ~Grid() = 0;
 };
 
 class Grid3D : Grid {
@@ -65,8 +67,6 @@ public:
       : x(x_val), y(y_val), z(z_val), grid(boost::extents[z_val][y_val][x_val]),
         dis_x(0, x_val - 1), dis_y(0, y_val - 1),
         dis_z(0, z_val - 1), Grid{3, J, beta, multihitparam, N, filename} {
-    std::cout << "Grid constructor: L: " << this->x << ", Beta: " << beta
-              << std::endl;
 
     groupname = "size_" + std::to_string(x) + "/";
 
@@ -80,10 +80,11 @@ public:
     for (array_type::index i = 0; i < z; ++i) {
       for (array_type::index j = 0; j < y; ++j) {
         for (array_type::index k = 0; k < x; ++k) {
-          if (random) {
+          if (random){
             this->grid[i][j][k].update_coords(dis_theta(gen), dis_phi(gen));
 
-          } else {
+          }
+          else{
             this->grid[i][j][k].update_coords(0, 0);
           }
           // std::cout << this->grid[i][j][k] << std::endl;
@@ -98,8 +99,7 @@ public:
 
     // grid = grid_tmp;
     this->Z = this->calculate_partition_function();
-    std::cout << "Grid constructor: L: " << this->x << ", Beta: " << beta
-              << std::endl;
+    std::cout << "Grid constructor: L: " << this->x << ", Beta: "<< beta << std::endl;
   }
 
   ~Grid3D() {
@@ -128,17 +128,15 @@ public:
     }
 
     std::cout << "Grid destructor" << std::endl;
-    std::cout << "Acceptance rate: "
-              << this->acceptance_rate / (N * this->x * this->y * this->z)
-              << std::endl;
+    std::cout << "Acceptance rate: " << this->acceptance_rate/(N*this->x*this->y*this->z) << std::endl;
     std::cout << "Accepted Changes: " << this->acceptance_rate << std::endl;
   }
 
   /* Solution to this Integral comes from Wolfram Alpha*/
   double calculate_partition_function() {
-    return std::pow(2 * std::numbers::pi * std::sinh(this->beta * this->J) /
-                        (this->beta * this->J),
-                    1);
+    return   std::pow(2*std::numbers::pi * std::sinh(this->beta * this->J) /
+                               (this->beta * this->J),
+                           1);
   }
 
   void hb_sweep() {
@@ -174,12 +172,43 @@ public:
 
     this->magnetization.push_back(this->calculate_magnetization());
     this->energy.push_back(this->calculate_energy());
-    return;
+
+    // size_t sweeps{this->x * this->y * this->z};
+    // for (int n = 0; n < sweeps; ++n) {
+
+    //   /*Generate random site*/
+    //   size_t x = dis_x(gen);
+    //   size_t y = dis_y(gen);
+    //   size_t z = dis_z(gen);
+
+    //   /*Generate random spin*/
+    //   Spin3D s(dis_theta(gen), dis_phi(gen));
+
+    //   double E{0.0};
+
+    //   E -= this->J * (s * this->grid[(z + 1 + this->z)% this->z][y][x] + s *
+    //   this->grid[(z - 1 + this->z)% this->z][y][x] +
+    //                  s * this->grid[z][(y + 1 + this->y) % this->y][x] + s *
+    //                  this->grid[z][(y - 1 + this->y) % this->y][x] + s *
+    //                  this->grid[z][y][(x + 1 + this->x) % this->x] + s *
+    //                  this->grid[z][y][(x - 1 + this->x) % this->x]);
+    //   double p{std::exp(-beta*J*E)/Z};
+    //   // std::cout << p << std::endl;
+    //   assert(0 <= p && p <= 1);
+    //   double r = dis_probability(gen);
+
+    //   if (r < p){
+    //     this->grid[z][y][x] = s;
+    //   }
+
+    // }
+    // // std::cout << this->calculate_magnetization() << std::endl;
   }
 
   void mainloop() {
-    for (int i = 1; i < this->N; i++) {
+    for (int i = 0; i < this->N; i++) {
       this->hb_sweep();
+      
 
       if (i % 100000 == 0) {
         boost::multi_array<double, 4> snapshot = this->snapshot();
@@ -221,19 +250,18 @@ public:
     for (array_type::index i = 0; i < this->z; ++i) {
       for (array_type::index j = 0; j < this->y; ++j) {
         for (array_type::index k = 0; k < this->x; ++k) {
-          h -= this->J / 2 *
-               (this->grid[i][j][k] *
-                    this->grid[(i + 1 + this->z) % this->z][j][k] +
-                this->grid[i][j][k] *
-                    this->grid[(i - 1 + this->z) % this->z][j][k] +
-                this->grid[i][j][k] *
-                    this->grid[i][(j + 1 + this->y) % this->y][k] +
-                this->grid[i][j][k] *
-                    this->grid[i][(j - 1 + this->y) % this->y][k] +
-                this->grid[i][j][k] *
-                    this->grid[i][j][(k + 1 + this->x) % this->x] +
-                this->grid[i][j][k] *
-                    this->grid[i][j][(k - 1 + this->x) % this->x]);
+          h -= this->J/2 * (this->grid[i][j][k] *
+                              this->grid[(i + 1 + this->z) % this->z][j][k] +
+                          this->grid[i][j][k] *
+                              this->grid[(i - 1 + this->z) % this->z][j][k] +
+                          this->grid[i][j][k] *
+                              this->grid[i][(j + 1 + this->y) % this->y][k] +
+                          this->grid[i][j][k] *
+                              this->grid[i][(j - 1 + this->y) % this->y][k] +
+                          this->grid[i][j][k] *
+                              this->grid[i][j][(k + 1 + this->x) % this->x] +
+                          this->grid[i][j][k] *
+                              this->grid[i][j][(k - 1 + this->x) % this->x]);
         }
       }
     }
