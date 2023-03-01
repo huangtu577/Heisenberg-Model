@@ -1,5 +1,9 @@
 
 # Installing the main dependencies 
-apt install cmake ninja-build build-essential 
-apt-get install libboost-all-dev libomp-dev libhdf5-serial-dev
+sudo apt install cmake 
+sudo apt install ninja-build 
+sudo apt install build-essential 
+sudo apt-get install libboost-all-dev 
+sudo apt-get install libomp-dev 
+sudo apt-get install libhdf5-serial-dev
 
