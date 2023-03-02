@@ -41,6 +41,12 @@ class Spin3D : Spin{
         return *this;
     }
 
+    Spin3D  operator-= (const Spin3D &rhs){
+        this->spin[0] -= rhs.spin[0];
+        this->spin[1] -= rhs.spin[1];
+        return *this;
+        }
+
     
 
         std::array<double, 2> spin;
