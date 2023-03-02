@@ -13,6 +13,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <stack>
 
 class Grid {
 protected:
@@ -173,46 +174,94 @@ public:
     this->magnetization.push_back(this->calculate_magnetization());
     this->energy.push_back(this->calculate_energy());
 
-    // size_t sweeps{this->x * this->y * this->z};
-    // for (int n = 0; n < sweeps; ++n) {
 
-    //   /*Generate random site*/
-    //   size_t x = dis_x(gen);
-    //   size_t y = dis_y(gen);
-    //   size_t z = dis_z(gen);
-
-    //   /*Generate random spin*/
-    //   Spin3D s(dis_theta(gen), dis_phi(gen));
-
-    //   double E{0.0};
-
-    //   E -= this->J * (s * this->grid[(z + 1 + this->z)% this->z][y][x] + s *
-    //   this->grid[(z - 1 + this->z)% this->z][y][x] +
-    //                  s * this->grid[z][(y + 1 + this->y) % this->y][x] + s *
-    //                  this->grid[z][(y - 1 + this->y) % this->y][x] + s *
-    //                  this->grid[z][y][(x + 1 + this->x) % this->x] + s *
-    //                  this->grid[z][y][(x - 1 + this->x) % this->x]);
-    //   double p{std::exp(-beta*J*E)/Z};
-    //   // std::cout << p << std::endl;
-    //   assert(0 <= p && p <= 1);
-    //   double r = dis_probability(gen);
-
-    //   if (r < p){
-    //     this->grid[z][y][x] = s;
-    //   }
-
-    // }
-    // // std::cout << this->calculate_magnetization() << std::endl;
   }
 
-  void mainloop() {
-    for (int i = 0; i < this->N; i++) {
-      this->hb_sweep();
-      
+  void wolf_sweep() {
+    const Spin3D r(dis_theta(gen), dis_phi(gen));
+    std::vector<std::array<size_t, 3>> visited{};
+    visited.reserve(this->x*this->y*this->z);
 
-      if (i % 100000 == 0) {
-        boost::multi_array<double, 4> snapshot = this->snapshot();
-#pragma omp critical
+    std::stack<std::array<size_t, 3>> stack;
+
+    /* Random start sites*/
+    double x(dis_x(gen)), y(dis_y(gen)), z(dis_z(gen));
+
+    Spin3D s = this->grid[static_cast<int>(z)][static_cast<int>(y)]
+                         [static_cast<int>(x)];
+    spin_flip_wolf(r, this->grid[static_cast<int>(z)][static_cast<int>(y)]
+                         [static_cast<int>(x)]);
+    stack.push({static_cast<size_t>(z), static_cast<size_t>(y),
+                static_cast<size_t>(x)});
+
+    while (!stack.empty()) {
+      std::array<size_t, 3> current{stack.top()};
+      if(std::find(visited.begin(), visited.end(), current) != visited.end()){
+        stack.pop();
+        continue;
+      }
+      visited.push_back(current);
+      stack.pop();
+      Spin3D current_s = this->grid[current[0]][current[1]][current[2]];
+
+      /* Calculate NN Interaction*/
+      Spin3D neighbor;
+
+      std::array<std::array<size_t, 3>, 6> nn = calc_nn(current);
+
+      for (int i = 0; i < 6; i++) {
+        neighbor = this->grid[nn[i][0]][nn[i][1]][nn[i][2]];
+        double q{dis_probability(gen)};
+        double p{1 - std::exp(2 * this->beta * this->J * (current_s * r)*(neighbor*r))};
+
+        // std::cout << p << std::endl;
+
+        
+          
+          if (q < p) {
+            this->acceptance_rate++;
+            spin_flip_wolf(r, this->grid[nn[i][0]][nn[i][1]][nn[i][2]]);
+            stack.push(nn[i]);
+          }
+        }
+      }
+      this->magnetization.push_back(this->calculate_magnetization());
+      this->energy.push_back(this->calculate_energy());
+    }
+  
+
+    std::array<std::array<size_t, 3>, 6> calc_nn(
+        std::array<size_t, 3> current) {
+      std::array<std::array<size_t, 3>, 6> nn;
+      nn[0] = {(current[0] + 1 + this->z) % this->z, current[1], current[2]};
+      nn[1] = {(current[0] - 1 + this->z) % this->z, current[1], current[2]};
+      nn[2] = {current[0], (current[1] + 1 + this->y) % this->y, current[2]};
+      nn[3] = {current[0], (current[1] - 1 + this->y) % this->y, current[2]};
+      nn[4] = {current[0], current[1], (current[2] + 1 + this->x) % this->x};
+      nn[5] = {current[0], current[1], (current[2] - 1 + this->x) % this->x};
+      return nn;
+    }
+
+    /* Performs the Spin Flip of s*/
+    void spin_flip_wolf(const Spin3D &r, Spin3D &s) {
+      double a = 2 * (s * r);
+      // s.update_coords(s.spin[0] - a*r.spin[0], s.spin[1] - a*r.spin[1]);
+      // return;
+
+      s.spin[0] -= a * r.spin[0];
+      s.spin[1] -= a * r.spin[1];
+    }
+
+    void mainloop(bool wolff=false) {
+
+      if(!wolff){
+
+      for (int i = 0; i < this->N; i++) {
+        this->hb_sweep();
+
+        if (i % 100000 == 0) {
+          boost::multi_array<double, 4> snapshot = this->snapshot();
+        #pragma omp critical
         {
           HighFive::File file(this->filename, HighFive::File::ReadWrite);
           HighFive::DataSet data_set = file.createDataSet<double>(
@@ -223,6 +272,26 @@ public:
         }
       }
     }
+      }
+      else{
+        for (int i = 0; i < this->N; i++) {
+        this->wolf_sweep();
+
+        if (i % 100000 == 0) {
+          boost::multi_array<double, 4> snapshot = this->snapshot();
+        #pragma omp critical
+        {
+          HighFive::File file(this->filename, HighFive::File::ReadWrite);
+          HighFive::DataSet data_set = file.createDataSet<double>(
+              this->groupname + this->subgroup + this->snapshots +
+                  std::to_string(i),
+              HighFive::DataSpace::From(snapshot));
+          data_set.write(snapshot);
+        }
+      }
+    }
+      }
+
   }
 
   double calculate_magnetization() {
@@ -286,7 +355,7 @@ protected:
   const size_t x, y, z;
 
   friend std::ostream &operator<<(std::ostream &out, const Grid3D &grid);
-};
+  };
 
 std::ostream &operator<<(std::ostream &out, const Grid3D &grid) {
   for (Grid3D::array_type::index i = 0; i < grid.z; ++i) {
