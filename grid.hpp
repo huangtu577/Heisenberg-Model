@@ -132,7 +132,7 @@ public:
           HighFive::File file(this->filename, HighFive::File::ReadWrite);
           HighFive::DataSet data_set = file.createDataSet<double>(
               this->groupname + this->subgroup + this->snapshots +
-                  std::to_string(this->N + 1),
+                  "Shutdown",
               HighFive::DataSpace::From(snapshot));
           data_set.write(snapshot);
         }
@@ -279,11 +279,13 @@ public:
       if(!wolff){
 
       for (int i = 0; i < this->N; i++) {
-        this->hb_sweep();
+        /* Spin away the remaining computations*/
         if(globals::Stop){
-          this->~Grid3D();
-          return;
+          continue;
+          // this->~Grid3D();
+          // return;
         }
+        this->hb_sweep();
         if (i % 100000 == 0) {
           boost::multi_array<double, 4> snapshot = this->snapshot();
         #pragma omp critical
@@ -300,13 +302,15 @@ public:
       }
       else{
         for (int i = 0; i < this->N; i++) {
+          /*Spin away the remaining computations*/
+        if(globals::Stop){
+          continue;
+          // std::cout << "Stop" << std::endl;
+          // this->~Grid3D();
+          // return;
+        }
         this->wolf_sweep();
 
-        if(globals::Stop){
-          std::cout << "Stop" << std::endl;
-          this->~Grid3D();
-          return;
-        }
 
         if (i % 100000 == 0) {
           boost::multi_array<double, 4> snapshot = this->snapshot();
