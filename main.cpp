@@ -3,6 +3,7 @@
 #include "highfive/H5Exception.hpp"
 #include <array>
 #include <boost/multi_array.hpp>
+#include <exception>
 #include <fstream>
 #include <highfive/H5Easy.hpp>
 #include <highfive/H5File.hpp>
@@ -13,19 +14,38 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
+#include <csignal>
+
+
+
+void signalHandler(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received.\n";
+  globals::Stop = true;
+
+  sleep(20e3);
+  
+ 
+  
+  exit(signum);
+  
+}
 
 
 int main() {
   double J = 1.0;
-  const int N = 5e6;
-  const std::string FILENAME = "heisenberg_model.h5";
+  const int N = 1e6;
+  const std::string FILENAME = "heisenberg_model_wolff_test.h5";
   std::cout << std::setprecision(10);
   const size_t multihitparam = 7;
-  size_t steps = 16;
-  const size_t CORES = 8;
+  const size_t steps = 24;
+  const size_t CORES = 12;
+
+  // std::vector<Grid3D*> grids;
 
   double start_value = 0.55;
   double increment = 0.02;
+
+  std::signal(SIGTERM, signalHandler);
 
   std::cout << "Lowest beta: " << start_value << "Highest beta: " << start_value + increment * steps << std::endl;
   
@@ -40,7 +60,7 @@ int main() {
   //   std::cout << grid.snapshot() << std::endl;
 
   // create a list of L values containing 25, 30, 35, 40, 45, 50, 55, 60
-  std::vector<size_t> L_list = {20, 30, 35, 40};
+  std::vector<size_t> L_list = {20};
 
   
 
@@ -51,17 +71,27 @@ int main() {
     std::cout << "Start: Local date and time is: " << dt << std::endl;
     
     std::cout << "Starting L = " << L << std::endl;
+
+
+
+    
     
     
     
     #pragma omp parallel for
       for (int i = 0; i < steps; i++) {
+
+        
         
 
         double beta = start_value + increment *i;
 
+        
         Grid3D grid(L, L, L, J, beta, multihitparam, N, FILENAME);
-        grid.mainloop();
+
+
+        grid.mainloop(true);
+        
 
       
       }
