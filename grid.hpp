@@ -15,6 +15,13 @@
 #include <vector>
 #include <stack>
 
+namespace globals
+{
+  
+  bool Stop = false;
+
+}
+
 class Grid {
 protected:
   size_t dim;
@@ -104,17 +111,32 @@ public:
   }
 
   ~Grid3D() {
+    boost::multi_array<double, 4> snapshot = this->snapshot();
+
+
 
 #pragma omp critical
     {
       try {
 
+        {
         H5Easy::File file(this->filename, H5Easy::File::ReadWrite);
 
         H5Easy::dump(file, this->groupname + this->subgroup + "Magnetization",
                      this->magnetization, H5Easy::DumpMode::Overwrite);
         H5Easy::dump(file, this->groupname + this->subgroup + "Energy",
                      this->energy, H5Easy::DumpMode::Overwrite);
+        }
+        
+          {
+          HighFive::File file(this->filename, HighFive::File::ReadWrite);
+          HighFive::DataSet data_set = file.createDataSet<double>(
+              this->groupname + this->subgroup + this->snapshots +
+                  std::to_string(this->N + 1),
+              HighFive::DataSpace::From(snapshot));
+          data_set.write(snapshot);
+        }
+        
 
       } catch (HighFive::Exception const &err) {
         std::cout << err.what() << std::endl;
@@ -258,7 +280,10 @@ public:
 
       for (int i = 0; i < this->N; i++) {
         this->hb_sweep();
-
+        if(globals::Stop){
+          this->~Grid3D();
+          return;
+        }
         if (i % 100000 == 0) {
           boost::multi_array<double, 4> snapshot = this->snapshot();
         #pragma omp critical
@@ -276,6 +301,12 @@ public:
       else{
         for (int i = 0; i < this->N; i++) {
         this->wolf_sweep();
+
+        if(globals::Stop){
+          std::cout << "Stop" << std::endl;
+          this->~Grid3D();
+          return;
+        }
 
         if (i % 100000 == 0) {
           boost::multi_array<double, 4> snapshot = this->snapshot();
