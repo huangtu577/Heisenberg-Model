@@ -212,7 +212,7 @@ public:
       for (int i = 0; i < 6; i++) {
         neighbor = this->grid[nn[i][0]][nn[i][1]][nn[i][2]];
         double q{dis_probability(gen)};
-        double p{1 - std::exp(2 * this->beta * this->J * (current_s * r)*(neighbor*r))};
+        double p{1 - std::exp(std::min(0., 2 * this->beta * this->J * (current_s * r)*(neighbor*r)))};
 
         // std::cout << p << std::endl;
 
