@@ -41,3 +41,4 @@ test/
 .cache/
 Gifs/
 *.ipynb*
+*.h5
