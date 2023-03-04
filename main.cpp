@@ -56,8 +56,8 @@ int main() {
   //   std::cout << grid.snapshot() << std::endl;
 
   // create a list of L values containing 25, 30, 35, 40, 45, 50, 55, 60
-  // std::vector<size_t> L_list = {15, 20, 25, 30, 35, 40};
-  std::vector<size_t> L_list = {45, 50, 55, 60, 17, 23, 27, 33, 37, 43};
+  std::vector<size_t> L_list = {15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 17, 23, 27, 33, 37, 43};
+  // std::vector<size_t> L_list = {45, 50, 55, 60, 17, 23, 27, 33, 37, 43};
   
 
   for(size_t L: L_list){
