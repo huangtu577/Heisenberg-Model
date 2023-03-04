@@ -29,7 +29,7 @@ void signalHandler(int signum) {
 int main() {
   double J = 1.0;
   const int N = 1e6;
-  const std::string FILENAME = "heisenberg_model_wolff.h5";
+  const std::string FILENAME = "heisenberg_model_wolff_updated.h5";
   std::cout << std::setprecision(10);
   const size_t multihitparam = 7;
   const size_t steps = 8;
