@@ -279,11 +279,10 @@ public:
       if(!wolff){
 
       for (int i = 0; i < this->N; i++) {
+
         /* Spin away the remaining computations*/
         if(globals::Stop){
           continue;
-          // this->~Grid3D();
-          // return;
         }
         this->hb_sweep();
         if (i % 100000 == 0) {
@@ -305,10 +304,8 @@ public:
           /*Spin away the remaining computations*/
         if(globals::Stop){
           continue;
-          // std::cout << "Stop" << std::endl;
-          // this->~Grid3D();
-          // return;
         }
+        
         this->wolf_sweep();
 
 
