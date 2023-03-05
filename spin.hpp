@@ -1,4 +1,4 @@
-#pragma ONCE
+#pragma once
 #include <array>
 #include <cstddef>
 #include <ostream>
@@ -34,6 +34,8 @@ class Spin3D : Spin{
         return std::sin(spin[0]) * std::sin(rhs.spin[0]) * std::cos(spin[1] - rhs.spin[1]) + std::cos(spin[0]) * std::cos(rhs.spin[0]);
     }
 
+    
+
     Spin3D  operator+= (const Spin3D &rhs){
         
         this->spin[0] += rhs.spin[0];
@@ -53,7 +55,7 @@ class Spin3D : Spin{
     protected:
 };
 
-std::ostream& operator << (std::ostream &out, const Spin3D &spin){
+inline std::ostream& operator << (std::ostream &out, const Spin3D &spin){
     
         out << "Spin3D: " << spin.spin[0] << ", " << spin.spin[1] << " ";
         return out;
