@@ -128,6 +128,10 @@ public:
                      this->magnetization, H5Easy::DumpMode::Overwrite);
         H5Easy::dump(file, this->groupname + this->subgroup + "Energy",
                      this->energy, H5Easy::DumpMode::Overwrite);
+        if(this->visited_nodes.size() > 0){
+          H5Easy::dump(file, this->groupname + this->subgroup + "Visited_Nodes",
+                       this->visited_nodes, H5Easy::DumpMode::Overwrite);
+        }
         }
         
           {
@@ -140,10 +144,6 @@ public:
         }
         
 
-        if(this->visited_nodes.size() > 0){
-          H5Easy::dump(file, this->groupname + this->subgroup + "Visited_Nodes",
-                       this->visited_nodes, H5Easy::DumpMode::Overwrite);
-        }
 
       } catch (HighFive::Exception const &err) {
         std::cout << err.what() << std::endl;
@@ -218,7 +218,7 @@ public:
 
     Spin3D s = this->grid[static_cast<int>(z)][static_cast<int>(y)]
                          [static_cast<int>(x)];
-    spin_flip_wolf(r, this->grid[static_cast<int>(z)][static_cast<int>(y)]
+    spin_flip_wolf_karth(r, this->grid[static_cast<int>(z)][static_cast<int>(y)]
                          [static_cast<int>(x)]);
     stack.push({static_cast<size_t>(z), static_cast<size_t>(y),
                 static_cast<size_t>(x)});
