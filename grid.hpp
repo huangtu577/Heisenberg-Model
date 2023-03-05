@@ -1,4 +1,4 @@
-#pragma ONCE
+#pragma once
 #include "highfive/H5Easy.hpp"
 #include "highfive/H5File.hpp"
 #include "spin.hpp"
@@ -68,6 +68,7 @@ public:
   std::vector<double> magnetization, energy;
 
   double Z;
+  std::vector<double> visited_nodes;
 
   Grid3D(const size_t x_val, const size_t y_val, const size_t z_val,
          const double J, const double beta, const size_t multihitparam,
@@ -102,6 +103,7 @@ public:
 
     this->magnetization.reserve(this->N);
     this->energy.reserve(this->N);
+    this->visited_nodes.reserve(this->N);
 
     // std::cout << *grid.data() << std::endl;
 
@@ -137,6 +139,11 @@ public:
           data_set.write(snapshot);
         }
         
+
+        if(this->visited_nodes.size() > 0){
+          H5Easy::dump(file, this->groupname + this->subgroup + "Visited_Nodes",
+                       this->visited_nodes, H5Easy::DumpMode::Overwrite);
+        }
 
       } catch (HighFive::Exception const &err) {
         std::cout << err.what() << std::endl;
@@ -217,11 +224,12 @@ public:
                 static_cast<size_t>(x)});
 
     while (!stack.empty()) {
+      assert(visited.size() <= this->x*this->y*this->z);
       std::array<size_t, 3> current{stack.top()};
-      if(std::find(visited.begin(), visited.end(), current) != visited.end()){
-        stack.pop();
-        continue;
-      }
+      // if(std::find(visited.begin(), visited.end(), current) != visited.end()){
+      //   stack.pop();
+      //   continue;
+      // }
       visited.push_back(current);
       stack.pop();
       Spin3D current_s = this->grid[current[0]][current[1]][current[2]];
@@ -233,6 +241,11 @@ public:
 
       for (int i = 0; i < 6; i++) {
         neighbor = this->grid[nn[i][0]][nn[i][1]][nn[i][2]];
+
+        if(std::find(visited.begin(), visited.end(), nn[i]) != visited.end()){
+        
+          continue;
+      }
         double q{dis_probability(gen)};
         double p{1 - std::exp(std::min(0., 2 * this->beta * this->J * (current_s * r)*(neighbor*r)))};
 
@@ -242,13 +255,15 @@ public:
           
           if (q < p) {
             this->acceptance_rate++;
-            spin_flip_wolf(r, this->grid[nn[i][0]][nn[i][1]][nn[i][2]]);
+            spin_flip_wolf_karth(r, this->grid[nn[i][0]][nn[i][1]][nn[i][2]]);
             stack.push(nn[i]);
           }
         }
       }
+
       this->magnetization.push_back(this->calculate_magnetization());
       this->energy.push_back(this->calculate_energy());
+      this->visited_nodes.push_back(visited.size());
     }
   
 
@@ -265,14 +280,47 @@ public:
     }
 
     /* Performs the Spin Flip of s*/
-    void spin_flip_wolf(const Spin3D &r, Spin3D &s) {
+    static void spin_flip_wolf(const Spin3D &r, Spin3D &s) {
       double a = 2 * (s * r);
       // s.update_coords(s.spin[0] - a*r.spin[0], s.spin[1] - a*r.spin[1]);
       // return;
 
+      
+
       s.spin[0] -= a * r.spin[0];
       s.spin[1] -= a * r.spin[1];
+
+      
+
+      
     }
+
+    static void spin_flip_wolf_karth(const Spin3D &r, Spin3D &s) {
+      double a = 2 * (s * r);
+      double x, y, z;
+
+      x = std::sin(s.spin[0]) * std::cos(s.spin[1]);
+      y = std::sin(s.spin[0]) * std::sin(s.spin[1]);
+      z = std::cos(s.spin[0]);
+
+      double x1, y1, z1;
+      x1 = std::sin(r.spin[0]) * std::cos(r.spin[1]);
+      y1 = std::sin(r.spin[0]) * std::sin(r.spin[1]);
+      z1 = std::cos(r.spin[0]);
+
+      x -= a * x1;
+      y -= a * y1;
+      z -= a * z1;
+
+      double theta = std::acos(z);
+      double sgn = (y > 0)?1:-1;
+      double phi = sgn * std::acos(x / std::sqrt(x * x + y * y));
+
+
+      s.update_coords(theta, phi);
+    }
+
+
 
     void mainloop(bool wolff=false) {
 
