@@ -18,16 +18,16 @@
 
 int main() {
   double J = 1.0;
-  const int N = 1e5;
+  const int N = 1e4;
   size_t L = 11;
-  const std::string FILENAME = "heisenberg_model_test.h5";
+  const std::string FILENAME = "heisenberg_model_test_d.h5";
   std::cout << std::setprecision(10);
   const size_t multihitparam = 7;
-  size_t steps = 12;
+  size_t steps = 24;
   const size_t CORES = 12;
 
   double start_value = 0.55;
-  double increment = 0.02;
+  double increment = 0.01;
 
   {
     H5Easy::File file(FILENAME, H5Easy::File::ReadWrite | H5Easy::File::Create);
