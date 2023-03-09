@@ -35,11 +35,22 @@ int main() {
   const size_t steps = 8;
   const size_t CORES = 8;
   const size_t INSTANCE_NUM{0};
+  const size_t INSTANCES{3};
+
 
   // std::vector<Grid3D*> grids;
 
-  double increment = 0.01;
-  double start_value = 0.55 + increment * INSTANCE_NUM * (steps + 1);
+  /* TODO: Need to make a smaller max value and finer steps around the critical temperatur*/
+  double increment = 0.021/3;
+  double start_value = 0.58;
+
+  if(start_value +  2 * increment * INSTANCE_NUM * (steps + 1)> 0.75){
+    throw std::runtime_error("Start value is too high");
+  }
+
+  if(INSTANCE_NUM >= INSTANCES){
+    throw std::runtime_error("Instance number is too high");
+  }
 
   std::signal(SIGTERM, signalHandler);
 
@@ -72,9 +83,15 @@ int main() {
       for (int i = 0; i < steps; i++) {
 
         
+
+        
         
 
-        double beta = start_value + increment *i;
+        // double beta = start_value + increment *i;
+
+        double beta = start_value + increment*i*INSTANCES + increment*INSTANCE_NUM;
+        std::cout << "Beta: " << beta << std::endl;
+        
 
         
         Grid3D grid(L, L, L, J, beta, multihitparam, N, FILENAME);
