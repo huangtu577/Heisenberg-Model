@@ -38,8 +38,8 @@ int main() {
 
   /* TODO: Need to make a smaller max value and finer steps around the critical
    * temperatur*/
-  double increment = 0.021 / 3;
-  double start_value = 0.58;
+  double increment = 0.0038 / 3;
+  double start_value = 0.67;
 
   if (INSTANCE_NUM >= INSTANCES) {
     throw std::runtime_error("Instance number is too high");
@@ -60,8 +60,7 @@ int main() {
     H5Easy::File file(FILENAME, H5Easy::File::ReadWrite | H5Easy::File::Create);
   }
 
-  std::vector<size_t> L_list = {25, 30, 35, 40, 45, 50,
-                                55, 60, 17, 23, 27, 33, 37, 43};
+  std::vector<size_t> L_list = {16, 21, 24, 27, 29};
 
   std::vector<std::pair<size_t, double>> L_list_beta;
   for (size_t L : L_list) {
